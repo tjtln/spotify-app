@@ -18,8 +18,9 @@ jobs:
         node-version: '20'
 
     - name: Install dependencies
-      run: cd backend/spotify-app/getSongs
-      run: npm install
+      run: |
+          cd backend/spotify-app/getSongs
+          npm install
 
     - name: Install AWS CLI
       run: |

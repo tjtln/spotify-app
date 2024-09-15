@@ -36,4 +36,5 @@ jobs:
       run: sam build
 
     - name: Deploy SAM application
+      working-directory: backend/spotify-app
       run: sam deploy --no-confirm-changeset --config-file ./samconfig.toml

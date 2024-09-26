@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { Button, Typography, Container, Box } from '@mui/material';
 
 function Dashboard() {
-  const clientId = "549290679547443d91f55b8dcec011bf";
+  const clientId = import.meta.env.CLIENT_ID;
   const scopes = "user-library-read user-library-modify";
-  const redirectUri = "http://localhost:5173/callback";
+  const redirectUri = import.meta.env.REDIRECT_URI;
   
   const handleLogin = () => {
     if (!hasToken) {

@@ -1,11 +1,11 @@
 import { useEffect } from "react"
 import axios from 'axios';
-import { redirect, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 function Callback() {
     const navigate = useNavigate();
-    const clientId = "549290679547443d91f55b8dcec011bf";
-    const clientSecret = "4a30874f8fc84f06a588c173e4c8715a";
-    const redirectUri = "http://localhost:5173/callback";
+    const clientId = import.meta.env.CLIENT_ID;
+    const clientSecret = import.meta.env.CLIENT_SECRET;
+    const redirectUri = import.meta.env.REDIRECT_URI;
     useEffect(() => {
         const urlParams: URLSearchParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');

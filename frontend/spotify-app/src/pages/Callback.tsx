@@ -3,9 +3,9 @@ import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 function Callback() {
     const navigate = useNavigate();
-    const clientId = import.meta.env.CLIENT_ID;
-    const clientSecret = import.meta.env.CLIENT_SECRET;
-    const redirectUri = import.meta.env.REDIRECT_URI;
+    const clientId = import.meta.env.VITE_CLIENT_ID;
+    const clientSecret = import.meta.env.VITE_CLIENT_SECRET;
+    const redirectUri = import.meta.env.VITE_REDIRECT_URI;
     useEffect(() => {
         const urlParams: URLSearchParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');

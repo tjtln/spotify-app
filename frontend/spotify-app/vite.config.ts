@@ -5,9 +5,9 @@ import EnvironmentPlugin from 'vite-plugin-environment'
 export default defineConfig({
   plugins: [react(),
     EnvironmentPlugin([
-      'CLIENT_ID',
-      'CLIENT_SECRET',
-      'REDIRECT_URI',
+      'VITE_CLIENT_ID',
+      'VITE_CLIENT_SECRET',
+      'VITE_REDIRECT_URI',
   ]),
   ],
 })

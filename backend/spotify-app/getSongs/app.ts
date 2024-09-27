@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import axios from 'axios';
-import { SpotifyResponse, DuplicateSongs, Songs} from './types';
+import { SpotifyResponse, DuplicateSongs, Songs, AllSongs} from './types';
 
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const songs: Songs = [];
@@ -37,7 +37,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
                 }
             };
             console.log(`calling with ${i}`)
-            axios<SpotifyResponse>(options) //wip
+            axios<SpotifyResponse>(options)
                 .then(response => {
                     const likedSongs = response.data.items;
                     likedSongs.forEach(song => {
@@ -55,22 +55,22 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
     try {
     await getSongs();
     await delay(1000)
-    const values = {};
+    const allSongs: AllSongs = {};
     let count = 0;
-    const duplicateSongs: Songs = {};
+    const duplicateSongs: DuplicateSongs = {};
     songs.forEach(song => {
         const name = song.name;
         const artist = song.artist
         const id = song.id;
-        if (!values[`${name}`]) {
-            values[`${name}`] = [artist];
+        if (!allSongs[`${name}`]) {
+            allSongs[`${name}`] = [artist];
         } else {
-            const existingArtists = values[`${name}`];
+            const existingArtists = allSongs[`${name}`];
             if(existingArtists.includes(song.artist)) {
                 duplicateSongs[`${id}`] = {"name": name, "artist": artist};
                 count++;
             } else {
-                values[`${name}`].push(artist);
+                allSongs[`${name}`].push(artist);
             }
         }
     });

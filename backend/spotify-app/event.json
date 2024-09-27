@@ -1,0 +1,11 @@
+{
+    "httpMethod": "GET",
+    "path": "/",
+    "headers": {
+      "Authorization": "Bearer token"
+    },
+    "queryStringParameters": {
+      "token": "BQABmhJscnfktcGCDe7awMQf0_RBR5e5AvmcqdsYGY1Jzy5YZsC4w5xmWyiS3B01VSf27LvgD1yUzEx1ICB-uMJXUGEQjeimBQxDeq8MDPUNmJynO9J-daCdnpHrMvpJgpdA6Y11lmDGlI0rpLXEFuGRKW-Lubc96kvPH2BiScjHDxaQYyV-NArCW21ggbei_63-hagtNe9c"
+    }
+  }
+  

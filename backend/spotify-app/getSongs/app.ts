@@ -17,11 +17,13 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         return axios<SpotifyResponse>(options)
             .then(response => {
                 return response.data.total;
+            }).catch(error => {
+                console.error('Error fetching liked songs:', error.response ? error.response.data : error.message);
             });
     }
     async function getAllSongs() {
         const allSongs: Song[] = [];
-        const totalSongs = await getTotal();
+        const totalSongs = await getTotal() as number;
         for(let i = 0; i < totalSongs + 1; i+= 20) {
             const options = {
                 method: 'GET',
@@ -38,6 +40,8 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
                     likedSongs.forEach(song => {
                         allSongs.push({"name": song.track.name, "artists": song.track.artists.map(artist => artist.name), "id": song.track.id, "album": song.track.album.name, "albumImage": song.track.album.images[0].url})
                     });
+                }).catch(error => {
+                    console.error('Error fetching liked songs:', error.response ? error.response.data : error.message);
                 });
             if(i % 500 == 0) {
                 await delay(3000);
@@ -64,6 +68,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
     }
     try {
         const allSongs = await getAllSongs();
+        await delay(3000)
         const duplicateSongs = findDuplicates(allSongs);
         return {
             statusCode: 200,

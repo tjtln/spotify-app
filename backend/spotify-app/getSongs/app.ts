@@ -1,38 +1,33 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import axios from 'axios';
-import { SpotifyResponse, DuplicateSongs, Songs, AllSongs} from './types';
+import { SpotifyResponse, Song, SongsObject} from './types';
 
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const songs: Songs = [];
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
     const token = event.queryStringParameters?.token;
-    const accessToken = token;
-    async function getSongs(){
-        async function getTotal(): Promise<number>{
-            const options = {
-                method: 'GET',
-                url: `https://api.spotify.com/v1/me/tracks?limit=1&offset=0`,
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
-                }
-            };
-            return axios(options)
-                .then(response => {
-                    return response.data.total;
-                })
-                .catch(error => {
-                    console.error('Error fetching liked songs:', error.response ? error.response.data : error.message);
-                });
-        }
-        const total = await getTotal();
-        console.log(`found ${total} liked songs`);
-        for(let i = 0; i < total + 1; i+= 20) {
+    async function getTotal() {
+        const options = {
+            method: 'GET',
+            url: `https://api.spotify.com/v1/me/tracks?limit=1&offset=0`,
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        };
+        return axios<SpotifyResponse>(options)
+            .then(response => {
+                return response.data.total;
+            });
+    }
+    async function getAllSongs() {
+        const allSongs: Song[] = [];
+        const totalSongs = await getTotal();
+        for(let i = 0; i < totalSongs + 1; i+= 20) {
             const options = {
                 method: 'GET',
                 url: `https://api.spotify.com/v1/me/tracks?limit=20&offset=${i}`,
                 headers: {
-                    'Authorization': `Bearer ${accessToken}`,
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             };
@@ -41,51 +36,43 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
                 .then(response => {
                     const likedSongs = response.data.items;
                     likedSongs.forEach(song => {
-                        songs.push({"name": song.track.name, "artist": song.track.artists[0].id, "id": song.track.id})
+                        allSongs.push({"name": song.track.name, "artists": song.track.artists.map(artist => artist.name), "id": song.track.id, "album": song.track.album.name, "albumImage": song.track.album.images[0].url})
                     });
-                })
-                .catch(error => {
-                    console.error('Error fetching liked songs:', error.response ? error.response.data : error.message);
                 });
             if(i % 500 == 0) {
                 await delay(3000);
             }
         }
+        return allSongs;
+    }
+    function findDuplicates(songs: Song[]) {
+        const songsObject: SongsObject = {};
+        const duplicateSongs: Song[] = [];
+        songs.forEach(song => {
+            if(songsObject[`${song.name}`]){
+                songsObject[`${song.name}`] = [song.artists[0]]
+            } else {
+                const existingArtists = songsObject[`${song.name}`];
+                if(existingArtists.includes(song.artists[0])) {
+                    duplicateSongs.push({"name": song.name, "artists": song.artists, "id": song.id, "album": song.album, "albumImage": song.albumImage})
+                } else {
+                    songsObject[`${song.name}`].push(song.artists[0]);
+                }
+            }
+        })
+        return duplicateSongs;
     }
     try {
-    await getSongs();
-    await delay(1000)
-    const allSongs: AllSongs = {};
-    let count = 0;
-    const duplicateSongs: DuplicateSongs = {};
-    songs.forEach(song => {
-        const name = song.name;
-        const artist = song.artist
-        const id = song.id;
-        if (!allSongs[`${name}`]) {
-            allSongs[`${name}`] = [artist];
-        } else {
-            const existingArtists = allSongs[`${name}`];
-            if(existingArtists.includes(song.artist)) {
-                duplicateSongs[`${id}`] = {"name": name, "artist": artist};
-                count++;
-            } else {
-                allSongs[`${name}`].push(artist);
-            }
+        const allSongs = await getAllSongs();
+        const duplicateSongs = findDuplicates(allSongs);
+        return {
+            statusCode: 200,
+            body: JSON.stringify({"allSongs": allSongs, "duplicateSongs": duplicateSongs})
         }
-    });
-    console.log(count + ' duplicate songs found');
-    return {
-        statusCode: 200,
-        body: JSON.stringify(duplicateSongs),
-    };
-    } catch (err) {
-        console.log(err);
+    } catch (error) {
         return {
             statusCode: 500,
-            body: JSON.stringify({
-                message: 'some error happened',
-            }),
-        };
+            body: JSON.stringify(error)
+        }
     }
 };

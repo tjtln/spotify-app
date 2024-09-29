@@ -1,20 +1,15 @@
-export type SongInfo = {
-    name: string;
-    artist: string;
-};
-
-export type DuplicateSongs = {
-    [songId: string]: SongInfo;
-};
+export type returnObject = {
+    duplicateSongs: Song[];
+    allSongs: Song[];
+}
 
 export type Song = {
     name: string;
-    artist: string;
     id: string;
-}
-
-export type Songs = Song[]
-
+    artists: string[];
+    album: string;
+    albumImage: string;
+};
 
 export type SpotifyResponse = {
     href: string;
@@ -45,6 +40,7 @@ type SpotifyArtist = {
 
 type SpotifyAlbum = {
     id: string;
+    name: string;
     images: SpotifyImage[];
 }
 
@@ -54,6 +50,6 @@ type SpotifyImage = {
     width: number;
 }
 
-export type AllSongs = {
+export type SongsObject = {
     [songName: string]: string[]
 }

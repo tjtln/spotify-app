@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Button, Typography, Container, Box } from '@mui/material';
+import { Button, Typography, Container, Box, Table, TableContainer, Paper, TableHead, TableCell, TableRow, TableBody } from '@mui/material';
+import axios from 'axios'
+import { songsResponse } from '../types';
 
 function Dashboard() {
   const clientId = import.meta.env.VITE_CLIENT_ID;
@@ -15,8 +17,24 @@ function Dashboard() {
     }
   };
 
-  const [hasToken, setHasToken] = useState<boolean>(localStorage.getItem('spotify_token') != null);
+  async function getAllSongs(token: string): Promise<songsResponse> {
+    const options = {
+      method: 'GET',
+      url: `https://dx1rj4m3g9.execute-api.us-east-1.amazonaws.com/Prod/songs?token=${token}`,
+      headers: {
+          'Content-Type': 'application/json'
+      }
+  };
+  return axios(options)
+      .then(response => {
+          return response.data;
+      })
+      .catch(error => {
+          console.error('Error fetching liked songs:', error.response ? error.response.data : error.message);
+      });
+  }
 
+  const [hasToken, setHasToken] = useState<boolean>(localStorage.getItem('spotify_token') != null);
   useEffect(() => {
     const token = localStorage.getItem('spotify_token');
     setHasToken(!!token);
@@ -57,15 +75,6 @@ function Dashboard() {
         <Typography variant="h4" component="h1" gutterBottom>
           Dashboard
         </Typography>
-        {hasToken ? (
-        <Typography variant="h6" component="h3">
-          Spotify Songs
-        </Typography>
-      ) : (
-        <Typography variant="body1" color="textSecondary">
-          Please log in to manage your songs.
-        </Typography>
-      )}
       </Box>
     </Container>
   );

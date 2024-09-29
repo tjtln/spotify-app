@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button, Typography, Container, Box, Table, TableContainer, Paper, TableHead, TableCell, TableRow, TableBody } from '@mui/material';
 import axios from 'axios'
+import { songsResponse } from '../types';
 
 function Dashboard() {
   const clientId = import.meta.env.VITE_CLIENT_ID;
@@ -16,7 +17,7 @@ function Dashboard() {
     }
   };
 
-  async function getAllSongs(token: string): Promise<> {
+  async function getAllSongs(token: string): Promise<songsResponse> {
     const options = {
       method: 'GET',
       url: `https://dx1rj4m3g9.execute-api.us-east-1.amazonaws.com/Prod/songs?token=${token}`,
@@ -34,13 +35,9 @@ function Dashboard() {
   }
 
   const [hasToken, setHasToken] = useState<boolean>(localStorage.getItem('spotify_token') != null);
-  const [songs, setSongs] = useState<object>();
   useEffect(() => {
     const token = localStorage.getItem('spotify_token');
     setHasToken(!!token);
-    if(token) {
-      setSongs(allSongs(token));
-    }
   }, []);
 
   return (
@@ -78,32 +75,6 @@ function Dashboard() {
         <Typography variant="h4" component="h1" gutterBottom>
           Dashboard
         </Typography>
-        {songs ? (
-        <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Song</TableCell>
-              <TableCell>Artist</TableCell>
-              <TableCell>Album</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {songs.map((song, index) => (
-              <TableRow key={index}>
-                <TableCell>{song.name}</TableCell>
-                <TableCell>{song.artist}</TableCell>
-                <TableCell>{song.album}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      ) : (
-        <Typography variant="body1" color="textSecondary">
-          Please log in to manage your songs.
-        </Typography>
-      )}
       </Box>
     </Container>
   );

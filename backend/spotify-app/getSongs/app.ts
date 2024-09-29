@@ -79,12 +79,22 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
         const duplicateSongs = findDuplicates(allSongs);
         return {
             statusCode: 200,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Credentials': true,
+                'Access-Control-Allow-Headers': '*',
+            },
             body: JSON.stringify({"allSongs": allSongs, "duplicateSongs": duplicateSongs})
         }
     } catch (error) {
         console.log(error);
         return {
             statusCode: 500,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Credentials': true,
+                'Access-Control-Allow-Headers': '*',
+            },
             body: JSON.stringify(error)
         }
     }

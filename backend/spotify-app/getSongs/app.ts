@@ -43,18 +43,16 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
                 }).catch(error => {
                     console.error('Error fetching liked songs:', error.response ? error.response.data : error.message);
                 });
-            if(i % 500 == 0) {
-                await delay(3000);
-            }
         }
+        await delay(1000);
         return allSongs;
     }
     function findDuplicates(songs: Song[]) {
         const songsObject: SongsObject = {};
         const duplicateSongs: Song[] = [];
         songs.forEach(song => {
-            if(songsObject[`${song.name}`]){
-                songsObject[`${song.name}`] = [song.artists[0]]
+            if(!songsObject[`${song.name}`]){
+                songsObject[`${song.name}`] = [song.artists[0]];
             } else {
                 const existingArtists = songsObject[`${song.name}`];
                 if(existingArtists.includes(song.artists[0])) {
@@ -68,13 +66,13 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
     }
     try {
         const allSongs = await getAllSongs();
-        await delay(3000)
         const duplicateSongs = findDuplicates(allSongs);
         return {
             statusCode: 200,
             body: JSON.stringify({"allSongs": allSongs, "duplicateSongs": duplicateSongs})
         }
     } catch (error) {
+        console.log(error);
         return {
             statusCode: 500,
             body: JSON.stringify(error)

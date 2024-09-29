@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button, Typography, Container, Box, Table, TableContainer, Paper, TableHead, TableCell, TableRow, TableBody } from '@mui/material';
 import axios from 'axios'
-import { songsResponse } from '../types';
+import { Song, songsResponse } from '../types';
 
 function Dashboard() {
   const clientId = import.meta.env.VITE_CLIENT_ID;
@@ -35,10 +35,23 @@ function Dashboard() {
   }
 
   const [hasToken, setHasToken] = useState<boolean>(localStorage.getItem('spotify_token') != null);
+  const [songs, setSongs] = useState<Song[]>([]);  // State to store the songs
+  const [duplicateSongs, setDuplicateSongs] = useState<Song[]>([]);  // State to store the songs
+
+  const [loading, setLoading] = useState<boolean>(false);
+
   useEffect(() => {
     const token = localStorage.getItem('spotify_token');
-    setHasToken(!!token);
-  }, []);
+    if (token) {
+      setHasToken(true);
+      setLoading(true);  // Start loading state
+      getAllSongs(token).then(response => {
+        setSongs(response.allSongs);  // Update songs state
+        setDuplicateSongs(response.duplicateSongs);  // Update songs state
+        setLoading(false);  // End loading state
+      });
+    }
+  }, [hasToken]);
 
   return (
     <Container
@@ -47,23 +60,23 @@ function Dashboard() {
         mt: 4,
         justifyContent: 'center',
         alignItems: 'center',
-        position: 'relative', // Make this position relative
-        height: '100vh', // Full height of the viewport
+        position: 'relative',
+        height: '100vh',
       }}
     >
       <Box
         sx={{
           position: 'absolute',
-          top: 16, // Distance from the top
-          left: 0, // Start from the left side of the screen
-          width: '100vw', // Full width of the viewport
-          display: 'flex', // Use flexbox to position the button
-          justifyContent: 'flex-end', // Push the button to the right
-          paddingRight: 1600, // Optional padding from the right edge
+          top: 16,
+          left: 0,
+          width: '100vw',
+          display: 'flex',
+          justifyContent: 'flex-end',
+          paddingRight: 1600,
         }}
       >
         <Button
-          sx={{marginRight: 16}}
+          sx={{ marginRight: 16 }}
           variant="contained"
           color={hasToken ? 'secondary' : 'primary'}
           onClick={handleLogin}
@@ -71,10 +84,43 @@ function Dashboard() {
           {hasToken ? 'Logout' : 'Login'}
         </Button>
       </Box>
-      <Box sx={{textAlign: 'center', justifyContent: 'center', width: '100vw'}}>
+      
+      <Box sx={{ textAlign: 'center', justifyContent: 'center', width: '100vw' }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Dashboard
+          Spotify Songs
         </Typography>
+        {hasToken ? (
+          loading ? (  // Show loading message while fetching data
+            <Typography variant="h6">Loading songs...</Typography>
+          ) : (
+            <>
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Song</TableCell>
+                      <TableCell>Artist</TableCell>
+                      <TableCell>Album</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {songs.map((song, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{song.name}</TableCell>
+                        <TableCell>{song.artists.join(", ")}</TableCell>
+                        <TableCell>{song.album}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </>
+          )
+        ) : (
+          <Typography variant="h6" component="h3">
+            No token available. Please log in.
+          </Typography>
+        )}
       </Box>
     </Container>
   );

@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import axios from 'axios';
 import { SpotifyResponse, Song, SongsObject} from './types';
+import pLimit from 'p-limit';
 
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -24,27 +25,35 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
     async function getAllSongs() {
         const allSongs: Song[] = [];
         const totalSongs = await getTotal() as number;
-        for(let i = 0; i < totalSongs + 1; i+= 20) {
-            const options = {
-                method: 'GET',
-                url: `https://api.spotify.com/v1/me/tracks?limit=20&offset=${i}`,
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            };
-            console.log(`calling with ${i}`)
-            axios<SpotifyResponse>(options)
-                .then(response => {
-                    const likedSongs = response.data.items;
-                    likedSongs.forEach(song => {
-                        allSongs.push({"name": song.track.name, "artists": song.track.artists.map(artist => artist.name), "id": song.track.id, "album": song.track.album.name, "albumImage": song.track.album.images[0].url})
+        const limit = pLimit(5);
+    
+        const requests = [];
+        for (let i = 0; i < totalSongs; i += 20) {
+            requests.push(limit(async () => {
+                const options = {
+                    method: 'GET',
+                    url: `https://api.spotify.com/v1/me/tracks?limit=20&offset=${i}`,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                };
+                console.log(`calling with ${i}`);
+                const response = await axios<SpotifyResponse>(options);
+                const likedSongs = response.data.items;
+                likedSongs.forEach(song => {
+                    allSongs.push({
+                        "name": song.track.name,
+                        "artists": song.track.artists.map(artist => artist.name),
+                        "id": song.track.id,
+                        "album": song.track.album.name,
+                        "albumImage": song.track.album.images[0]?.url
                     });
-                }).catch(error => {
-                    console.error('Error fetching liked songs:', error.response ? error.response.data : error.message);
                 });
+            }));
         }
-        await delay(1000);
+    
+        await Promise.all(requests);
         return allSongs;
     }
     function findDuplicates(songs: Song[]) {
@@ -66,6 +75,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
     }
     try {
         const allSongs = await getAllSongs();
+        await delay(3000)
         const duplicateSongs = findDuplicates(allSongs);
         return {
             statusCode: 200,

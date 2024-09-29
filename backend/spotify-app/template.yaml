@@ -21,6 +21,10 @@ Resources:
           Properties:
             Path: /songs
             Method: get
+            Cors:                        
+              AllowOrigin: "*"
+              AllowHeaders: "*"
+              AllowMethods: "'OPTIONS,GET'
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -32,11 +36,5 @@ Resources:
 
 Outputs:
   SpotifyApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  GetSongsFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt GetSongsFunction.Arn
-  GetSongsFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt GetSongsFunctionRole.Arn
+    Description: "API Gateway endpoint URL for getSongs"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/songs?token=yourtoken"

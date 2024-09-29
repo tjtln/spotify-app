@@ -4,7 +4,6 @@ import { SpotifyResponse, Song, SongsObject} from './types';
 import pLimit from 'p-limit';
 
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
     const token = event.queryStringParameters?.token;
     async function getTotal() {
         const options = {
@@ -75,16 +74,23 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
     }
     try {
         const allSongs = await getAllSongs();
-        await delay(3000)
         const duplicateSongs = findDuplicates(allSongs);
         return {
             statusCode: 200,
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "*",
+            },
             body: JSON.stringify({"allSongs": allSongs, "duplicateSongs": duplicateSongs})
         }
     } catch (error) {
         console.log(error);
         return {
             statusCode: 500,
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "*",
+            },
             body: JSON.stringify(error)
         }
     }

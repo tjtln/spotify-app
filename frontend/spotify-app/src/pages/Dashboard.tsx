@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Button, Typography, Container, Box, Table, TableContainer, Paper, TableHead, TableCell, TableRow, TableBody } from '@mui/material';
+import { Button, Typography, Container, Box, Table, TableContainer, Paper, TableHead, TableCell, TableRow, TableBody, Grid2 as Grid } from '@mui/material';
+
 import axios from 'axios'
 import { Song, songsResponse } from '../types';
 
@@ -93,28 +94,61 @@ function Dashboard() {
           loading ? (  // Show loading message while fetching data
             <Typography variant="h6">Loading songs...</Typography>
           ) : (
-            <>
-              <TableContainer component={Paper}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Song</TableCell>
-                      <TableCell>Artist</TableCell>
-                      <TableCell>Album</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {songs.map((song, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{song.name}</TableCell>
-                        <TableCell>{song.artists.join(", ")}</TableCell>
-                        <TableCell>{song.album}</TableCell>
+            <Grid container spacing={2}>
+              <Grid size={6}>
+                <Typography variant="h6" gutterBottom>
+                  All Liked Songs
+                </Typography>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Song</TableCell>
+                        <TableCell>Artist</TableCell>
+                        <TableCell>Album</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </>
+                    </TableHead>
+                    <TableBody>
+                      {songs.map((song, index) => (
+                        <TableRow key={index}>
+                          <img src={song.albumImage} alt={song.name} style={{ width: 50, height: 50 }}/>
+                          <TableCell>{song.name}</TableCell>
+                          <TableCell>{song.artists.join(", ")}</TableCell>
+                          <TableCell>{song.album}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Grid>
+              <Grid size={6}>
+                <Typography variant="h6" gutterBottom>
+                  Duplicate Songs
+                </Typography>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Song</TableCell>
+                        <TableCell>Artist</TableCell>
+                        <TableCell>Album</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {duplicateSongs.map((song, index) => (
+                        <TableRow key={index}>
+                          <img src={song.albumImage} alt={song.name} style={{ width: 50, height: 50 }}/>
+                          <TableCell>{song.name}
+                          </TableCell>
+                          <TableCell>{song.artists.join(", ")}</TableCell>
+                          <TableCell>{song.album}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Grid>
+            </Grid>
           )
         ) : (
           <Typography variant="h6" component="h3">

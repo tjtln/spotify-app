@@ -5,7 +5,7 @@ import pLimit from 'p-limit';
 
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const token = event.queryStringParameters?.token;
-    const songs: Song[] = JSON.parse(event.body as string).songs;
+    const songs: Song[] = JSON.parse(event.body as string);
     console.log('event: ' + JSON.stringify(event));
     console.log('songs: ' + JSON.stringify(songs));
     console.log('body: ' + event.body);

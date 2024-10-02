@@ -73,7 +73,6 @@ function Dashboard() {
           width: '100vw',
           display: 'flex',
           justifyContent: 'flex-end',
-          paddingRight: 1600,
         }}
       >
         <Button
@@ -85,13 +84,12 @@ function Dashboard() {
           {hasToken ? 'Logout' : 'Login'}
         </Button>
       </Box>
-      
-      <Box sx={{ textAlign: 'center', justifyContent: 'center', width: '100vw' }}>
+      <Box sx={{ textAlign: 'center', justifyContent: 'center', width: '100vw', maxWidth: '140%'}}>
         <Typography variant="h4" component="h1" gutterBottom>
           Spotify Songs
         </Typography>
         {hasToken ? (
-          loading ? (  // Show loading message while fetching data
+          loading ? ( 
             <Typography variant="h6">Loading songs...</Typography>
           ) : (
             <Grid container spacing={2}>
@@ -103,6 +101,7 @@ function Dashboard() {
                   <Table>
                     <TableHead>
                       <TableRow>
+                        <TableCell></TableCell>
                         <TableCell>Song</TableCell>
                         <TableCell>Artist</TableCell>
                         <TableCell>Album</TableCell>
@@ -111,10 +110,10 @@ function Dashboard() {
                     <TableBody>
                       {songs.map((song, index) => (
                         <TableRow key={index}>
-                          <img src={song.albumImage} alt={song.name} style={{ width: 50, height: 50 }}/>
-                          <TableCell>{song.name}</TableCell>
-                          <TableCell>{song.artists.join(", ")}</TableCell>
-                          <TableCell>{song.album}</TableCell>
+                          <img src={song.albumImage} alt={song.name} style={{width: 50, height: 50 }}/>
+                          <TableCell sx={{height: '30px', overflowY: 'auto', whiteSpace: 'normal'}}>{song.name}</TableCell>
+                          <TableCell sx={{height: '30px', overflowY: 'auto', whiteSpace: 'normal'}}>{song.artists.join(", ")}</TableCell>
+                          <TableCell sx={{height: '30px', overflowY: 'auto', whiteSpace: 'normal'}}>{song.album}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -129,19 +128,35 @@ function Dashboard() {
                   <Table>
                     <TableHead>
                       <TableRow>
+                        <TableCell></TableCell>
                         <TableCell>Song</TableCell>
                         <TableCell>Artist</TableCell>
                         <TableCell>Album</TableCell>
+                        <TableCell></TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {duplicateSongs.map((song, index) => (
                         <TableRow key={index}>
                           <img src={song.albumImage} alt={song.name} style={{ width: 50, height: 50 }}/>
-                          <TableCell>{song.name}
-                          </TableCell>
+                          <TableCell>{song.name}</TableCell>
                           <TableCell>{song.artists.join(", ")}</TableCell>
                           <TableCell>{song.album}</TableCell>
+                          <TableCell>
+                          <Button 
+                            sx={{ 
+                              minWidth: 'auto', 
+                              padding: '5px 10px', 
+                              fontSize: '0.8rem', 
+                              color: 'white', 
+                              background: '#ff1744',
+                              borderColor: '#ff1744',
+                              borderRadius: '20px'
+                            }} 
+                          >
+                              Delete
+                            </Button>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

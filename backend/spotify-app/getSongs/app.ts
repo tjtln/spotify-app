@@ -80,6 +80,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             headers: {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Headers": "*",
+
             },
             body: JSON.stringify({"allSongs": allSongs, "duplicateSongs": duplicateSongs})
         }
@@ -90,6 +91,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
             headers: {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Headers": "*",
+
             },
             body: JSON.stringify(error)
         }

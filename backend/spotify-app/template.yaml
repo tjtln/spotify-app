@@ -30,6 +30,30 @@ Resources:
         EntryPoints: 
         - app.ts
 
+  DeleteSongsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: deleteSongs/
+      Handler: app.lambdaHandler
+      Runtime: nodejs20.x
+      Timeout: 300
+      Architectures:
+        - x86_64
+      Events:
+        Spotify:
+          Type: Api
+          Properties:
+            Path: /songs
+            Method: delete
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - app.ts
+
 Outputs:
   SpotifyApi:
     Description: "API Gateway endpoint URL for getSongs"

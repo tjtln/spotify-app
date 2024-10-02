@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import axios, { AxiosError } from 'axios';
-import { SpotifyResponse, Song, SongsObject} from './types';
+import { Song } from './types';
 import pLimit from 'p-limit';
 
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {

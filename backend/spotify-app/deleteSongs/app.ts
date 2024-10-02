@@ -8,6 +8,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGat
     const songs: Song[] = JSON.parse(event.body as string).songs;
     console.log('event: ' + JSON.stringify(event));
     console.log('songs: ' + JSON.stringify(songs));
+    console.log('body: ' + event.body);
     const failedSongs: Song[] = [];
     for(const song of songs){
         try {

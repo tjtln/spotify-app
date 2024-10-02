@@ -6,12 +6,12 @@ import pLimit from 'p-limit';
 export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const token = event.queryStringParameters?.token;
     const songs: Song[] = JSON.parse(event.body as string).songs;
-    console.log('event: ' + event);
-    console.log('songs: ' + songs);
+    console.log('event: ' + JSON.stringify(event));
+    console.log('songs: ' + JSON.stringify(songs));
     const failedSongs: Song[] = [];
     for(const song of songs){
         try {
-            const response = await axios.delete(`https://api.spotify.com/v1/me/tracks?ids=${song}`, {
+            const response = await axios.delete(`https://api.spotify.com/v1/me/tracks?ids=${song.id}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'

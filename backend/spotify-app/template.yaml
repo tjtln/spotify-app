@@ -21,10 +21,6 @@ Resources:
           Properties:
             Path: /songs
             Method: get
-            Cors:                        
-              AllowOrigin: "*"
-              AllowHeaders: "*"
-              AllowMethods: "'OPTIONS,GET'
     Metadata:
       BuildMethod: esbuild
       BuildProperties:

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Typography, Container, Box, Table, TableContainer, Paper, TableHead, TableCell, TableRow, TableBody, Grid2 as Grid } from '@mui/material';
+import { Button, Typography, Container, Box, Table, TableContainer, Paper, TableHead, TableCell, TableRow, TableBody, Grid2 as Grid, Checkbox } from '@mui/material';
 
 import axios from 'axios'
 import { Song, songsResponse } from '../types';
@@ -8,15 +8,28 @@ function Dashboard() {
   const clientId = import.meta.env.VITE_CLIENT_ID;
   const scopes = "user-library-read user-library-modify";
   const redirectUri = import.meta.env.VITE_REDIRECT_URI;
-  
+
+  const [hasToken, setHasToken] = useState<boolean>(localStorage.getItem('spotify_token') != null);
+  const [songs, setSongs] = useState<Song[]>([]);  // State to store the songs
+  const [duplicateSongs, setDuplicateSongs] = useState<Song[]>([]);  // State to store the songs
+  const [loading, setLoading] = useState<boolean>(true);
+  const [selectedSongs, setSelectedSongs] = useState<string[]>([]);
+
+
   const handleLogin = () => {
     if (!hasToken) {
       window.location.href = `https://accounts.spotify.com/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scopes}`;
     } else {
       localStorage.removeItem('spotify_token');
       setHasToken(false);
+      console.log('set hasToken to false')
     }
   };
+
+  const handleSelect = (id: string) => {
+    setSelectedSongs(selected => selected.includes(id) ? selected.filter(previousId => previousId !== id) : [...selected, id])
+  };
+  console.log(selectedSongs);
 
   async function getAllSongs(token: string): Promise<songsResponse> {
     const options = {
@@ -35,16 +48,12 @@ function Dashboard() {
       });
   }
 
-  const [hasToken, setHasToken] = useState<boolean>(localStorage.getItem('spotify_token') != null);
-  const [songs, setSongs] = useState<Song[]>([]);  // State to store the songs
-  const [duplicateSongs, setDuplicateSongs] = useState<Song[]>([]);  // State to store the songs
-
-  const [loading, setLoading] = useState<boolean>(false);
-
   useEffect(() => {
+    console.log('render')
     const token = localStorage.getItem('spotify_token');
     if (token) {
       setHasToken(true);
+      console.log('set hasToken to true');
       setLoading(true);  // Start loading state
       getAllSongs(token).then(response => {
         setSongs(response.allSongs);  // Update songs state
@@ -128,6 +137,19 @@ function Dashboard() {
                   <Table>
                     <TableHead>
                       <TableRow>
+                        <TableCell>
+                          <Checkbox 
+                            checked={duplicateSongs.length > 0 && selectedSongs.length === duplicateSongs.length}
+                            indeterminate={selectedSongs.length > 0 && selectedSongs.length < songs.length}
+                            onChange={() => {
+                              if (selectedSongs.length === duplicateSongs.length) {
+                                setSelectedSongs([]);
+                              } else {
+                                setSelectedSongs(duplicateSongs.map(song => song.id));
+                              }
+                            }}
+                          />
+                        </TableCell>
                         <TableCell></TableCell>
                         <TableCell>Song</TableCell>
                         <TableCell>Artist</TableCell>
@@ -137,25 +159,15 @@ function Dashboard() {
                     </TableHead>
                     <TableBody>
                       {duplicateSongs.map((song, index) => (
-                        <TableRow key={index}>
+                        <TableRow key={index} selected={selectedSongs.includes(song.id)}>
+                          <TableCell>
+                            <Checkbox checked={selectedSongs.includes(song.id)} onChange={() => handleSelect(song.id)}/>
+                          </TableCell>
                           <img src={song.albumImage} alt={song.name} style={{ width: 50, height: 50 }}/>
                           <TableCell>{song.name}</TableCell>
                           <TableCell>{song.artists.join(", ")}</TableCell>
                           <TableCell>{song.album}</TableCell>
                           <TableCell>
-                          <Button 
-                            sx={{ 
-                              minWidth: 'auto', 
-                              padding: '5px 10px', 
-                              fontSize: '0.8rem', 
-                              color: 'white', 
-                              background: '#ff1744',
-                              borderColor: '#ff1744',
-                              borderRadius: '20px'
-                            }} 
-                          >
-                              Delete
-                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}

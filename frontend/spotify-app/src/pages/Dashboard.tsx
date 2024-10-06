@@ -13,7 +13,7 @@ function Dashboard() {
   const [songs, setSongs] = useState<Song[]>([]);  // State to store the songs
   const [duplicateSongs, setDuplicateSongs] = useState<Song[]>([]);  // State to store the songs
   const [loading, setLoading] = useState<boolean>(true);
-  const [selectedSongs, setSelectedSongs] = useState<string[]>([]);
+  const [selectedSongs, setSelectedSongs] = useState<Song[]>([]);
 
 
   const handleLogin = () => {
@@ -26,10 +26,44 @@ function Dashboard() {
     }
   };
 
-  const handleSelect = (id: string) => {
-    setSelectedSongs(selected => selected.includes(id) ? selected.filter(previousId => previousId !== id) : [...selected, id])
+  const handleSelect = (song: Song) => {
+    setSelectedSongs((selected) => {
+      const isSelected = selected.some((selectedSong) => selectedSong.id === song.id);
+  
+      if (isSelected) {
+        // If the song is already selected, filter it out
+        return selected.filter((selectedSong) => selectedSong.id !== song.id);
+      } else {
+        // If the song is not selected, add it to the selection
+        return [...selected, song];
+      }
+    });
   };
+  
   console.log(selectedSongs);
+
+  const handleDelete = () => {
+    console.log('handling delete')
+    if(hasToken){
+      const token = localStorage.getItem('spotify_token') as string;
+
+      const options = {
+        method: 'DELETE',
+        url: `https://dx1rj4m3g9.execute-api.us-east-1.amazonaws.com/Prod/songs?token=${token}`,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: {
+          selectedSongs
+        }
+      };
+      return axios(options)
+        .then(response => {
+          console.log(response);
+          getAllSongs(token);
+        })
+    }
+  }
 
   async function getAllSongs(token: string): Promise<songsResponse> {
     const options = {
@@ -38,14 +72,14 @@ function Dashboard() {
       headers: {
           'Content-Type': 'application/json'
       }
-  };
-  return axios(options)
-      .then(response => {
-          return response.data;
-      })
-      .catch(error => {
-          console.error('Error fetching liked songs:', error.response ? error.response.data : error.message);
-      });
+    };
+    return axios(options)
+        .then(response => {
+            return response.data;
+        })
+        .catch(error => {
+            console.error('Error fetching liked songs:', error.response ? error.response.data : error.message);
+        });
   }
 
   useEffect(() => {
@@ -71,7 +105,7 @@ function Dashboard() {
         justifyContent: 'center',
         alignItems: 'center',
         position: 'relative',
-        height: '100vh',
+        height: '90vh',
       }}
     >
       <Box
@@ -87,88 +121,102 @@ function Dashboard() {
         <Button
           sx={{ marginRight: 16 }}
           variant="contained"
-          color={hasToken ? 'secondary' : 'primary'}
+          color={hasToken ? 'primary' : 'secondary'}
           onClick={handleLogin}
         >
           {hasToken ? 'Logout' : 'Login'}
         </Button>
       </Box>
-      <Box sx={{ textAlign: 'center', justifyContent: 'center', width: '100vw', maxWidth: '140%'}}>
+      <Box sx={{ textAlign: 'center', justifyContent: 'center', width: '100vw', maxWidth: '140%' }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Spotify Songs
         </Typography>
         {hasToken ? (
-          loading ? ( 
+          loading ? (
             <Typography variant="h6">Loading songs...</Typography>
           ) : (
             <Grid container spacing={2}>
-              <Grid size={6}>
-                <Typography variant="h6" gutterBottom>
-                  All Liked Songs
-                </Typography>
-                <TableContainer component={Paper}>
-                  <Table>
+              <Grid size={6} container alignItems="center" justifyContent="center">
+                <Grid container alignItems="center" spacing={2}>
+                  <Box display="flex" justifyContent="center" alignItems="center">
+                    <Typography variant="h6" gutterBottom>
+                      All Liked Songs
+                    </Typography>
+                  </Box>
+                </Grid>
+                <TableContainer component={Paper} sx={{ maxHeight: '80vh', overflowY: 'auto' }}>
+                  <Table stickyHeader>
                     <TableHead>
                       <TableRow>
                         <TableCell></TableCell>
-                        <TableCell>Song</TableCell>
-                        <TableCell>Artist</TableCell>
-                        <TableCell>Album</TableCell>
+                        <TableCell sx={{ position: 'sticky', top: 0, background: '#fff', height: "45px" }}>Song</TableCell>
+                        <TableCell sx={{ position: 'sticky', top: 0, background: '#fff' }}>Artist</TableCell>
+                        <TableCell sx={{ position: 'sticky', top: 0, background: '#fff' }}>Album</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {songs.map((song, index) => (
                         <TableRow key={index}>
-                          <img src={song.albumImage} alt={song.name} style={{width: 50, height: 50 }}/>
-                          <TableCell sx={{height: '30px', overflowY: 'auto', whiteSpace: 'normal'}}>{song.name}</TableCell>
-                          <TableCell sx={{height: '30px', overflowY: 'auto', whiteSpace: 'normal'}}>{song.artists.join(", ")}</TableCell>
-                          <TableCell sx={{height: '30px', overflowY: 'auto', whiteSpace: 'normal'}}>{song.album}</TableCell>
+                          <TableCell>
+                            <img src={song.albumImage} alt={song.name} style={{ width: 50, height: 50 }} />
+                          </TableCell>
+                          <TableCell sx={{ height: '30px', overflowY: 'auto', whiteSpace: 'normal' }}>{song.name}</TableCell>
+                          <TableCell sx={{ height: '30px', overflowY: 'auto', whiteSpace: 'normal' }}>{song.artists.join(", ")}</TableCell>
+                          <TableCell sx={{ height: '30px', overflowY: 'auto', whiteSpace: 'normal' }}>{song.album}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
                 </TableContainer>
               </Grid>
-              <Grid size={6}>
-                <Typography variant="h6" gutterBottom>
-                  Duplicate Songs
-                </Typography>
-                <TableContainer component={Paper}>
-                  <Table>
+              <Grid size={6} container alignItems="center" justifyContent="center" >
+                <Grid container alignItems="center" spacing={2}>
+                    <Box display="flex" justifyContent="center" alignItems="center">
+                      <Typography variant="h6" gutterBottom>
+                        Duplicate Songs
+                      </Typography>
+                      <Button onClick={handleDelete} variant="contained" disabled={selectedSongs.length > 0 ? false : true} sx={{ borderRadius: "60px", background: "light-blue", marginLeft: 2 }}>
+                        Delete
+                      </Button>
+                    </Box>
+                </Grid>
+                <TableContainer component={Paper} sx={{ maxHeight: '80vh', overflowY: 'auto' }}>
+                  <Table stickyHeader>
                     <TableHead>
                       <TableRow>
                         <TableCell>
                           <Checkbox 
                             checked={duplicateSongs.length > 0 && selectedSongs.length === duplicateSongs.length}
-                            indeterminate={selectedSongs.length > 0 && selectedSongs.length < songs.length}
+                            indeterminate={selectedSongs.length > 0 && selectedSongs.length < duplicateSongs.length}
                             onChange={() => {
                               if (selectedSongs.length === duplicateSongs.length) {
                                 setSelectedSongs([]);
                               } else {
-                                setSelectedSongs(duplicateSongs.map(song => song.id));
+                                setSelectedSongs(duplicateSongs);
                               }
                             }}
                           />
                         </TableCell>
-                        <TableCell></TableCell>
-                        <TableCell>Song</TableCell>
-                        <TableCell>Artist</TableCell>
-                        <TableCell>Album</TableCell>
+                        <TableCell sx={{ position: 'sticky', top: 0, background: '#fff', height: "45px" }}></TableCell>
+                        <TableCell sx={{ position: 'sticky', top: 0, background: '#fff' }}>Song</TableCell>
+                        <TableCell sx={{ position: 'sticky', top: 0, background: '#fff' }}>Artist</TableCell>
+                        <TableCell sx={{ position: 'sticky', top: 0, background: '#fff' }}>Album</TableCell>
                         <TableCell></TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {duplicateSongs.map((song, index) => (
-                        <TableRow key={index} selected={selectedSongs.includes(song.id)}>
+                        <TableRow key={index} selected={selectedSongs.map(song => song.id).includes(song.id)}>
                           <TableCell>
-                            <Checkbox checked={selectedSongs.includes(song.id)} onChange={() => handleSelect(song.id)}/>
+                            <Checkbox checked={selectedSongs.map(song => song.id).includes(song.id)} onChange={() => handleSelect(song)} />
                           </TableCell>
-                          <img src={song.albumImage} alt={song.name} style={{ width: 50, height: 50 }}/>
+                          <TableCell>
+                            <img src={song.albumImage} alt={song.name} style={{ width: 50, height: 50 }} />
+                          </TableCell>
                           <TableCell>{song.name}</TableCell>
                           <TableCell>{song.artists.join(", ")}</TableCell>
                           <TableCell>{song.album}</TableCell>
-                          <TableCell>
-                          </TableCell>
+                          <TableCell></TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
